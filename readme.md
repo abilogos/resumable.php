@@ -32,7 +32,7 @@ return match ($status){
             200 => ['message' => 'OK'], // Uploading of chunk is complete.
             201 => [
                 'message' => 'File uploaded',
-                'file' => $handler->getStoredFileName()
+                'file' => $resumable->getStoredFileName()
             ],// Uploading of whole file is complete.
             204 => ['message' => 'Chunk not found'],
             default => ['message' => 'An error occurred'] //status => 404
