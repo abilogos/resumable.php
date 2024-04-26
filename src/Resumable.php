@@ -236,12 +236,37 @@ class Resumable
         }
         $this->filepath .= $finalFilename;
 
+        // Rename the file with random string at the end ,if that already exists
+        if(file_exists($this->filepath)){
+            $pathInfo = pathinfo($this->filepath);
+            $this->filepath = $pathInfo['dirname']
+                .DIRECTORY_SEPARATOR.$pathInfo['filename'].'_'
+                . $this->generateRandomString()
+                .".".$pathInfo['extension'];
+        }
+
         $this->extension = $this->findExtension($this->filepath);
 
         if ($this->createFileFromChunks($chunkFiles, $this->filepath) && $this->deleteTmpFolder) {
             $tmpFolder->delete();
             $this->isUploadComplete = true;
         }
+    }
+
+    public function getStoredFileName(): string
+    {
+        return pathinfo($this->filepath, PATHINFO_BASENAME);
+    }
+
+    public function generateRandomString($length = 5): string
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
     }
 
     private function resumableParam($shortName)
