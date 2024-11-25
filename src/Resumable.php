@@ -18,6 +18,8 @@ class Resumable
 
     public $uploadFolder = 'test/files/uploads';
 
+    public $chmodConfig = 0664;
+
     // for testing
     public $deleteTmpFolder = true;
 
@@ -203,6 +205,7 @@ class Resumable
         if (!$this->isChunkUploaded($identifier, $filename, $chunkNumber)) {
             $chunkFile = $this->tmpChunkDir($identifier) . DIRECTORY_SEPARATOR . $this->tmpChunkFilename($filename, $chunkNumber);
             $this->moveUploadedFile($file['tmp_name'], $chunkFile);
+            chmod($chunkFile, $this->chmodConfig);
         }
 
         if ($this->isFileUploadComplete($filename, $identifier, $totalChunks)) {
@@ -353,22 +356,22 @@ class Resumable
         return $handle;
     }
 
-    public function createFileFromChunks($chunkFiles, $destFile)
+    public function createFileFromChunks($chunkFiles, $destFilePath)
     {
         $this->log('Beginning of create files from chunks');
 
         natsort($chunkFiles);
 
         if (!empty($this->instanceId)) {
-            $this->ensureDirExists(dirname($destFile));
+            $this->ensureDirExists(dirname($destFilePath));
         }
 
-        $handle = $this->getExclusiveFileHandle($destFile);
+        $handle = $this->getExclusiveFileHandle($destFilePath);
         if (!$handle) {
             return false;
         }
 
-        $destFile = new File($destFile);
+        $destFile = new File($destFilePath);
         $destFile->handle = $handle;
         foreach ($chunkFiles as $chunkFile) {
             $file = new File($chunkFile);
@@ -376,6 +379,7 @@ class Resumable
 
             $this->log('Append ', ['chunk file' => $chunkFile]);
         }
+        chmod($destFilePath, $this->chmodConfig);
 
         $this->log('End of create files from chunks');
         return $destFile->exists();
