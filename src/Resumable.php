@@ -204,7 +204,9 @@ class Resumable
 
         if (!$this->isChunkUploaded($identifier, $filename, $chunkNumber)) {
             $chunkFile = $this->tmpChunkDir($identifier) . DIRECTORY_SEPARATOR . $this->tmpChunkFilename($filename, $chunkNumber);
-            $this->moveUploadedFile($file['tmp_name'], $chunkFile);
+            if (!$this->moveUploadedFile($file['tmp_name'], $chunkFile)) {
+                return $this->response->header(400);
+            }
             chmod($chunkFile, $this->chmodConfig);
         }
 
@@ -385,6 +387,9 @@ class Resumable
         return $destFile->exists();
     }
 
+    /**
+     * @return bool Success
+     */
     public function moveUploadedFile($file, $destFile)
     {
         //workaround cakephp error regarding: TMP not defined
