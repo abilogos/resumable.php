@@ -381,9 +381,10 @@ class Resumable
 
             $this->log('Append ', ['chunk file' => $chunkFile]);
         }
-        chmod($destFilePath, $this->chmodConfig);
-
-        $this->log('End of create files from chunks');
+        if ($destFile->exists()) {
+            chmod($destFilePath, $this->chmodConfig);
+            $this->log('End of create files from chunks');
+        }
         return $destFile->exists();
     }
 
